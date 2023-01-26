@@ -1,0 +1,11 @@
+# Used to configure the project
+
+# Window
+window_width = 1600
+window_height = 1000
+window_name = "Pathfinding"
+
+# Grid
+grid_columns = 30
+grid_rows = 15
+
