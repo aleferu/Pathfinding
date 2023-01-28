@@ -3,9 +3,8 @@
 # Window
 window_width = 1600
 window_height = 1000
-window_name = "Pathfinding"
+window_title = "Pathfinding"
 
 # Grid
-grid_columns = 30
-grid_rows = 15
-
+square_width = 50.0
+top_offset = 100.0
