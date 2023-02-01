@@ -25,27 +25,29 @@ fn window_conf() -> mq::Conf {
 async fn main() {
     let settings: HashMap<String, String> = settings_reader::get_settings();
 
+    let square_width: f32 = settings.get("square_width").unwrap().parse::<f32>().unwrap();
+    let top_offset: f32 = settings.get("top_offset").unwrap().parse::<f32>().unwrap();
+
+    let square_collection = squares::SquareCollection::new(&square_width, &top_offset, &mq::screen_width(), &mq::screen_height());
+
     // Window loop
     loop {
         // Background
         mq::clear_background(mq::WHITE);
-        draw_grid(
-            settings.get("square_width").unwrap().parse::<f32>().unwrap(),
-            settings.get("top_offset").unwrap().parse::<f32>().unwrap()
-        );
+        draw_grid(&square_width, &top_offset);
 
         mq::next_frame().await
     }
 }
 
 // Draw grid
-fn draw_grid(square_width: f32, top_offset: f32) {
+fn draw_grid(square_width: &f32, top_offset: &f32) {
     let mut x = 0f32;
-    let mut y = top_offset;
+    let mut y = *top_offset;
     let thickness = 2f32;
     let line_color = mq::BLACK;
     while x <= mq::screen_width() {
-        mq::draw_line(x, top_offset, x, mq::screen_height(), thickness, line_color);
+        mq::draw_line(x, *top_offset, x, mq::screen_height(), thickness, line_color);
         x += square_width;
     }
     while y <= mq::screen_height() {
