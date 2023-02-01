@@ -1,5 +1,8 @@
+extern crate core;
+
 use std::collections::HashMap;
 use macroquad::prelude as mq;
+use macroquad::input as input_mq;
 
 mod settings_reader;
 mod squares;
@@ -28,14 +31,25 @@ async fn main() {
     let square_width: f32 = settings.get("square_width").unwrap().parse::<f32>().unwrap();
     let top_offset: f32 = settings.get("top_offset").unwrap().parse::<f32>().unwrap();
 
-    let square_collection = squares::SquareCollection::new(&square_width, &top_offset, &mq::screen_width(), &mq::screen_height());
+    let mut square_collection = squares::SquareCollection::new(&square_width, &top_offset, &mq::screen_width(), &mq::screen_height());
 
     // Window loop
     loop {
         // Background
         mq::clear_background(mq::WHITE);
+
+        // Input
+        if input_mq::is_mouse_button_down(mq::MouseButton::Left) {
+            square_collection.create_wall(input_mq::mouse_position());
+        } else if input_mq::is_mouse_button_down(mq::MouseButton::Right) {
+            square_collection.set_objective(input_mq::mouse_position());
+        }
+
+        // Draw
+        square_collection.draw_squares();
         draw_grid(&square_width, &top_offset);
 
+        // Next frame
         mq::next_frame().await
     }
 }
