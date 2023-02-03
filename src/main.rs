@@ -43,6 +43,8 @@ async fn main() {
             square_collection.create_wall(input_mq::mouse_position());
         } else if input_mq::is_mouse_button_down(mq::MouseButton::Right) {
             square_collection.set_objective(input_mq::mouse_position());
+        } else if input_mq::is_mouse_button_down(mq::MouseButton::Middle) {
+            square_collection.set_start_square(input_mq::mouse_position());
         }
 
         // Draw

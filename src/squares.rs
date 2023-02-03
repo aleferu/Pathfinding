@@ -7,7 +7,8 @@ pub struct Square {
     y_grid: f32,
     drawable: bool,
     wall: bool,
-    objective: bool
+    objective: bool,
+    start_square: bool
 }
 
 
@@ -19,7 +20,8 @@ impl Square {
             y_grid: y,
             drawable: false,
             wall: false,
-            objective: false
+            objective: false,
+            start_square: false
         }
     }
 
@@ -45,12 +47,25 @@ impl Square {
         self.update_drawable();
     }
 
+    pub fn set_start_square(&mut self) {
+        self.start_square = true;
+        self.wall = false;
+        self.objective = false;
+        self.update_drawable();
+    }
+
     pub fn remove_objective(&mut self) {
         self.objective = false;
+        self.update_drawable();
+    }
+
+    pub fn remove_start_square(&mut self) {
+        self.start_square = false;
+        self.update_drawable();
     }
 
     fn update_drawable(&mut self) {
-        self.drawable =  self.visited || self.wall || self.objective;
+        self.drawable =  self.visited || self.wall || self.objective || self.start_square;
     }
 
     fn draw(&self, square_width: &f32, top_offset: &f32) {
@@ -58,7 +73,9 @@ impl Square {
             let x_coord = self.x_grid * square_width;
             let y_coord = self.y_grid * square_width + top_offset;
             let mut color: mq::Color = mq::WHITE;
-            if self.objective {
+            if self.start_square {
+                color = mq::GREEN;
+            } else if self.objective {
                 color = mq::RED;
             } else if self.wall {
                 color = mq::BLACK;
@@ -84,7 +101,9 @@ pub struct SquareCollection {
     top_offset: f32,
     squares: Vec<Vec<Square>>,
     objective: (usize, usize),
-    objective_set: bool
+    objective_set: bool,
+    start_square: (usize, usize),
+    start_square_set: bool
 }
 
 
@@ -97,7 +116,9 @@ impl SquareCollection {
             top_offset: *top_offset,
             squares: squares,
             objective: (0, 0),
-            objective_set: false
+            objective_set: false,
+            start_square: (0, 0),
+            start_square_set: false
         }
     }
 
@@ -152,6 +173,22 @@ impl SquareCollection {
                 self.squares[mouse_x_index][mouse_y_index].set_objective();
                 self.objective = (mouse_x_index, mouse_y_index);
                 self.objective_set = true;
+            }
+        }
+    }
+
+    pub fn set_start_square(&mut self, mouse_pos: (f32, f32)) {
+        if mouse_pos.1 > self.top_offset {
+            let (mouse_x, mouse_y): (f32, f32) = self.get_square_from_mouse(mouse_pos);
+            let mouse_x_index = mouse_x as usize;
+            let mouse_y_index = mouse_y as usize;
+            if self.start_square != (mouse_x_index, mouse_y_index) {
+                if self.start_square_set {
+                    self.squares[self.start_square.0][self.start_square.1].remove_start_square();
+                }
+                self.squares[mouse_x_index][mouse_y_index].set_start_square();
+                self.start_square = (mouse_x_index, mouse_y_index);
+                self.start_square_set = true;
             }
         }
     }
