@@ -34,11 +34,10 @@ async fn main() {
 
     let mut square_collection = squares::SquareCollection::new(&square_width, &top_offset, &mq::screen_width(), &mq::screen_height());
 
+    let mut loop_start_time = time::Instant::now();
+    let mut fps_counter: f64 = 0.0;
     // Window loop
     loop {
-        // Time start ticking
-        let time_start = time::Instant::now();
-
         // Background
         mq::clear_background(mq::WHITE);
 
@@ -55,26 +54,26 @@ async fn main() {
         square_collection.draw_squares();
         draw_grid(&square_width, &top_offset);
 
-        // Fps limit so it doesn't stress your CPU out
-        // let time_elapsed: u128 = time_start.elapsed().as_nanos();
-        // let maximum_frame_time: f32 = 1.0 / 120.0 * 1_000_000_000.0; // 60 frames per second as nanos = 120 ¿?¿?¿?
-        // let maximum_frame_time: u128 = maximum_frame_time as u128;
-        // println!("\nTime elapsed: {}, maximum {}", time_elapsed, maximum_frame_time);
-        // println!("FPS: {}", mq::get_fps());
-        // if time_elapsed < maximum_frame_time {
-        //     let time_sleeping = (maximum_frame_time - time_elapsed) as u64 / 1_000_000;
-        //     println!("Sleeping {} ms", time_sleeping);
-        //     std::thread::sleep(time::Duration::from_millis(time_sleeping));
-        // }
-
-        let frame_time = mq::get_frame_time() / 1000.0;
-        if frame_time > 1_000.0 / 60_000.0 {
-            std::thread::sleep(time::Duration::from_millis((1000.0 / 120.0) as u64));
-        }
-        println!("{}", );
-
         // Next frame
-        mq::next_frame().await
+        mq::next_frame().await;
+
+        // FPS counter
+        let time_elapsed_since_start = loop_start_time.elapsed().as_micros();
+        fps_counter += 1.0;
+        if time_elapsed_since_start >= 1_000_000 {
+            loop_start_time = time::Instant::now();
+            println!("\nFPS (me): {}\nFPS (mq): {}", fps_counter, mq::get_fps());
+            fps_counter = 0.0;
+        }
+
+        // FPS limit so it doesn't stress your CPU out
+        let fps: f64 = 300000.0;
+        let ideal_time: f64 = 1.0 / fps * 1_000_000.0 * fps_counter;
+        //println!("{} {}", ideal_time, time_elapsed_since_start);
+        let time_difference: i128 = ideal_time as i128 - time_elapsed_since_start as i128;
+        if time_difference > 0 {
+            std::thread::sleep(time::Duration::from_micros(time_difference as u64));
+        }
     }
 }
 
