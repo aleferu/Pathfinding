@@ -1,6 +1,7 @@
 extern crate core;
 
 use std::collections::HashMap;
+use std::time;
 use macroquad::prelude as mq;
 use macroquad::input as input_mq;
 
@@ -35,6 +36,9 @@ async fn main() {
 
     // Window loop
     loop {
+        // Time start ticking
+        let time_start = time::Instant::now();
+
         // Background
         mq::clear_background(mq::WHITE);
 
@@ -50,6 +54,24 @@ async fn main() {
         // Draw
         square_collection.draw_squares();
         draw_grid(&square_width, &top_offset);
+
+        // Fps limit so it doesn't stress your CPU out
+        // let time_elapsed: u128 = time_start.elapsed().as_nanos();
+        // let maximum_frame_time: f32 = 1.0 / 120.0 * 1_000_000_000.0; // 60 frames per second as nanos = 120 ¿?¿?¿?
+        // let maximum_frame_time: u128 = maximum_frame_time as u128;
+        // println!("\nTime elapsed: {}, maximum {}", time_elapsed, maximum_frame_time);
+        // println!("FPS: {}", mq::get_fps());
+        // if time_elapsed < maximum_frame_time {
+        //     let time_sleeping = (maximum_frame_time - time_elapsed) as u64 / 1_000_000;
+        //     println!("Sleeping {} ms", time_sleeping);
+        //     std::thread::sleep(time::Duration::from_millis(time_sleeping));
+        // }
+
+        let frame_time = mq::get_frame_time() / 1000.0;
+        if frame_time > 1_000.0 / 60_000.0 {
+            std::thread::sleep(time::Duration::from_millis((1000.0 / 120.0) as u64));
+        }
+        println!("{}", );
 
         // Next frame
         mq::next_frame().await
