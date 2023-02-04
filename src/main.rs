@@ -67,9 +67,8 @@ async fn main() {
         }
 
         // FPS limit so it doesn't stress your CPU out
-        let fps: f64 = 300000.0;
+        let fps: f64 = 60.0; // change this
         let ideal_time: f64 = 1.0 / fps * 1_000_000.0 * fps_counter;
-        //println!("{} {}", ideal_time, time_elapsed_since_start);
         let time_difference: i128 = ideal_time as i128 - time_elapsed_since_start as i128;
         if time_difference > 0 {
             std::thread::sleep(time::Duration::from_micros(time_difference as u64));
