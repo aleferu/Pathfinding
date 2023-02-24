@@ -61,7 +61,7 @@ async fn main() {
             fps_counter = 0.0;
         }
         let text_to_draw = format!("FPS (me): {frames_drawed}\nFPS (mq): {mq_fps}", mq_fps = mq::get_fps());
-        mq::draw_text(&text_to_draw, 5f32, 20f32, 24f32, mq::BLACK);
+        mq::draw_text(&text_to_draw, 5f32, 25f32, 30f32, mq::BLACK);
 
 
         // FPS limit so it doesn't stress your CPU out
