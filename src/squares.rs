@@ -1,14 +1,18 @@
 use macroquad::prelude as mq;
 
+enum SquareType {
+     Wall,
+     Objective,
+     Start,
+     Blank
+ }
+
 // Each grid cell
 pub struct Square {
     visited: bool,
     x_grid: f32,
     y_grid: f32,
-    drawable: bool,
-    wall: bool,
-    objective: bool,
-    start_square: bool
+    square_type: SquareType,
 }
 
 
@@ -18,10 +22,7 @@ impl Square {
             visited: false,
             x_grid: x,
             y_grid: y,
-            drawable: false,
-            wall: false,
-            objective: false,
-            start_square: false
+            square_type: SquareType::Blank
         }
     }
 
@@ -31,59 +32,34 @@ impl Square {
 
     pub fn got_visited(&mut self) {
         self.visited = true;
-        self.update_drawable();
     }
 
     pub fn got_walled(&mut self) {
-        if !self.objective {
-            self.wall = true;
-            self.update_drawable();
-        }
+        self.square_type = SquareType::Wall;
     }
 
     pub fn set_objective(&mut self) {
-        self.objective = true;
-        self.wall = false;
-        self.update_drawable();
+        self.square_type = SquareType::Objective;
     }
 
     pub fn set_start_square(&mut self) {
-        self.start_square = true;
-        self.wall = false;
-        self.objective = false;
-        self.update_drawable();
+        self.square_type = SquareType::Start;
     }
 
-    pub fn remove_objective(&mut self) {
-        self.objective = false;
-        self.update_drawable();
-    }
-
-    pub fn remove_start_square(&mut self) {
-        self.start_square = false;
-        self.update_drawable();
-    }
-
-    fn update_drawable(&mut self) {
-        self.drawable =  self.visited || self.wall || self.objective || self.start_square;
+    pub fn set_blank_square(&mut self) {
+        self.square_type = SquareType::Blank;
     }
 
     fn draw(&self, square_width: &f32, top_offset: &f32) {
-        if self.drawable {
-            let x_coord = self.x_grid * square_width;
-            let y_coord = self.y_grid * square_width + top_offset;
-            let mut color: mq::Color = mq::WHITE;
-            if self.start_square {
-                color = mq::GREEN;
-            } else if self.objective {
-                color = mq::RED;
-            } else if self.wall {
-                color = mq::BLACK;
-            } else if self.visited {
-                color = mq::BLUE;
-            }
-            mq::draw_rectangle(x_coord, y_coord, *square_width, *square_width, color);
-        }
+        let x_coord = self.x_grid * square_width;
+        let y_coord = self.y_grid * square_width + top_offset;
+        let color = match self.square_type {
+            SquareType::Blank => mq::WHITE,
+            SquareType::Wall=> mq::BLACK,
+            SquareType::Start=> mq::GREEN,
+            SquareType::Objective => mq::RED,
+        };
+        mq::draw_rectangle(x_coord, y_coord, *square_width, *square_width, color);
     }
 }
 
@@ -110,7 +86,7 @@ pub struct SquareCollection {
 impl SquareCollection {
 
     pub fn new(square_width: &f32, top_offset: &f32, screen_width: &f32, screen_height: &f32) -> SquareCollection {
-        let mut squares: Vec<Vec<Square>> = SquareCollection::build_circles(square_width, top_offset, screen_width, screen_height);
+        let squares: Vec<Vec<Square>> = SquareCollection::build_circles(square_width, top_offset, screen_width, screen_height);
         SquareCollection {
             square_width: *square_width,
             top_offset: *top_offset,
@@ -168,7 +144,7 @@ impl SquareCollection {
             let mouse_y_index = mouse_y as usize;
             if self.objective != (mouse_x_index, mouse_y_index) {
                 if self.objective_set {
-                    self.squares[self.objective.0][self.objective.1].remove_objective();
+                    self.squares[self.objective.0][self.objective.1].set_blank_square();
                 }
                 self.squares[mouse_x_index][mouse_y_index].set_objective();
                 self.objective = (mouse_x_index, mouse_y_index);
@@ -184,7 +160,7 @@ impl SquareCollection {
             let mouse_y_index = mouse_y as usize;
             if self.start_square != (mouse_x_index, mouse_y_index) {
                 if self.start_square_set {
-                    self.squares[self.start_square.0][self.start_square.1].remove_start_square();
+                    self.squares[self.start_square.0][self.start_square.1].set_blank_square();
                 }
                 self.squares[mouse_x_index][mouse_y_index].set_start_square();
                 self.start_square = (mouse_x_index, mouse_y_index);

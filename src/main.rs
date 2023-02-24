@@ -11,9 +11,6 @@ mod squares;
 // Setting up the window
 fn window_conf() -> mq::Conf {
     let settings: HashMap<String, String> = settings_reader::get_settings();
-    for setting in settings.keys() {
-        println!("{}: {}", setting, settings.get(setting).unwrap());
-    };
     mq::Conf {
         window_title: settings.get("window_title").unwrap().to_owned(),
         window_width: settings.get("window_width").unwrap().parse().unwrap(),
@@ -36,6 +33,7 @@ async fn main() {
 
     let mut loop_start_time = time::Instant::now();
     let mut fps_counter: f64 = 0.0;
+    let mut frames_drawed: f64 = 0.0;
     // Window loop
     loop {
         // Background
@@ -54,17 +52,17 @@ async fn main() {
         square_collection.draw_squares();
         draw_grid(&square_width, &top_offset);
 
-        // Next frame
-        mq::next_frame().await;
-
         // FPS counter
         let time_elapsed_since_start = loop_start_time.elapsed().as_micros();
         fps_counter += 1.0;
         if time_elapsed_since_start >= 1_000_000 {
             loop_start_time = time::Instant::now();
-            println!("\nFPS (me): {}\nFPS (mq): {}", fps_counter, mq::get_fps());
+            frames_drawed = fps_counter;
             fps_counter = 0.0;
         }
+        let text_to_draw = format!("FPS (me): {frames_drawed}\nFPS (mq): {mq_fps}", mq_fps = mq::get_fps());
+        mq::draw_text(&text_to_draw, 5f32, 20f32, 24f32, mq::BLACK);
+
 
         // FPS limit so it doesn't stress your CPU out
         let fps: f64 = 60.0; // change this
@@ -73,6 +71,9 @@ async fn main() {
         if time_difference > 0 {
             std::thread::sleep(time::Duration::from_micros(time_difference as u64));
         }
+
+        // Next frame
+        mq::next_frame().await;
     }
 }
 
