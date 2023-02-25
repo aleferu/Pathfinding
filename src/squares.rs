@@ -1,6 +1,6 @@
 use macroquad::prelude as mq;
 
-enum SquareType {
+pub enum SquareType {
      Wall,
      Objective,
      Start,
@@ -50,6 +50,10 @@ impl Square {
         self.square_type = SquareType::Blank;
     }
 
+    pub fn get_square_type(&self) -> &SquareType {
+        &self.square_type
+    }
+
     fn draw(&self, square_width: &f32, top_offset: &f32) {
         let x_coord = self.x_grid * square_width;
         let y_coord = self.y_grid * square_width + top_offset;
@@ -86,7 +90,7 @@ pub struct SquareCollection {
 impl SquareCollection {
 
     pub fn new(square_width: &f32, top_offset: &f32, screen_width: &f32, screen_height: &f32) -> SquareCollection {
-        let squares: Vec<Vec<Square>> = SquareCollection::build_circles(square_width, top_offset, screen_width, screen_height);
+        let squares: Vec<Vec<Square>> = SquareCollection::build_squares(square_width, top_offset, screen_width, screen_height);
         SquareCollection {
             square_width: *square_width,
             top_offset: *top_offset,
@@ -98,7 +102,7 @@ impl SquareCollection {
         }
     }
 
-    fn build_circles(square_width: &f32, top_offset: &f32, screen_width: &f32, screen_height: &f32) -> Vec<Vec<Square>> {
+    fn build_squares(square_width: &f32, top_offset: &f32, screen_width: &f32, screen_height: &f32) -> Vec<Vec<Square>> {
         let mut result: Vec<Vec<Square>> = Vec::new();
         let mut x_counter = 0f32;
         while x_counter * square_width < *screen_width {
@@ -142,14 +146,16 @@ impl SquareCollection {
             let (mouse_x, mouse_y): (f32, f32) = self.get_square_from_mouse(mouse_pos);
             let mouse_x_index = mouse_x as usize;
             let mouse_y_index = mouse_y as usize;
-            if self.objective != (mouse_x_index, mouse_y_index) {
-                if self.objective_set {
+            //if self.objective != (mouse_x_index, mouse_y_index) {
+            if self.objective_set {
+                if let SquareType::Objective = self.squares[self.objective.0][self.objective.1].get_square_type() {
                     self.squares[self.objective.0][self.objective.1].set_blank_square();
                 }
-                self.squares[mouse_x_index][mouse_y_index].set_objective();
-                self.objective = (mouse_x_index, mouse_y_index);
-                self.objective_set = true;
             }
+            self.squares[mouse_x_index][mouse_y_index].set_objective();
+            self.objective = (mouse_x_index, mouse_y_index);
+            self.objective_set = true;
+            //}
         }
     }
 
@@ -158,14 +164,16 @@ impl SquareCollection {
             let (mouse_x, mouse_y): (f32, f32) = self.get_square_from_mouse(mouse_pos);
             let mouse_x_index = mouse_x as usize;
             let mouse_y_index = mouse_y as usize;
-            if self.start_square != (mouse_x_index, mouse_y_index) {
-                if self.start_square_set {
+            //if self.start_square != (mouse_x_index, mouse_y_index) {
+            if self.start_square_set {
+                if let SquareType::Start = self.squares[self.start_square.0][self.start_square.1].get_square_type() {
                     self.squares[self.start_square.0][self.start_square.1].set_blank_square();
                 }
-                self.squares[mouse_x_index][mouse_y_index].set_start_square();
-                self.start_square = (mouse_x_index, mouse_y_index);
-                self.start_square_set = true;
             }
+            self.squares[mouse_x_index][mouse_y_index].set_start_square();
+            self.start_square = (mouse_x_index, mouse_y_index);
+            self.start_square_set = true;
+            //}
         }
     }
 }
