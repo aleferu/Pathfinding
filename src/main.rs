@@ -41,11 +41,15 @@ async fn main() {
 
         // Input
         if input_mq::is_mouse_button_down(mq::MouseButton::Left) {
-            square_collection.create_wall(input_mq::mouse_position());
+            if input_mq::is_key_down(mq::KeyCode::LeftShift) {
+                square_collection.change_square_type(input_mq::mouse_position(), squares::SquareType::Blank);
+            } else {
+                square_collection.change_square_type(input_mq::mouse_position(), squares::SquareType::Wall);
+            }
         } else if input_mq::is_mouse_button_down(mq::MouseButton::Right) {
-            square_collection.set_objective(input_mq::mouse_position());
+            square_collection.change_square_type(input_mq::mouse_position(), squares::SquareType::Objective);
         } else if input_mq::is_mouse_button_down(mq::MouseButton::Middle) {
-            square_collection.set_start_square(input_mq::mouse_position());
+            square_collection.change_square_type(input_mq::mouse_position(), squares::SquareType::Start);
         }
 
         // Draw
@@ -72,6 +76,8 @@ async fn main() {
         if time_difference > 0 {
             std::thread::sleep(time::Duration::from_micros(time_difference as u64));
         }
+
+        println!("{:?}\t{:?}", square_collection.is_start_square_set(), square_collection.is_objective_square_set());
 
         // Next frame
         mq::next_frame().await;

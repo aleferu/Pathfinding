@@ -1,5 +1,7 @@
 use macroquad::prelude as mq;
 
+#[derive(Clone)]
+#[derive(PartialEq)]
 pub enum SquareType {
      Wall,
      Objective,
@@ -8,13 +10,13 @@ pub enum SquareType {
  }
 
 // Each grid cell
+#[derive(Clone)]
 pub struct Square {
     visited: bool,
     x_grid: f32,
     y_grid: f32,
     square_type: SquareType,
 }
-
 
 impl Square {
     pub fn new(x: f32, y: f32) -> Square {
@@ -34,20 +36,8 @@ impl Square {
         self.visited = true;
     }
 
-    pub fn got_walled(&mut self) {
-        self.square_type = SquareType::Wall;
-    }
-
-    pub fn set_objective(&mut self) {
-        self.square_type = SquareType::Objective;
-    }
-
-    pub fn set_start_square(&mut self) {
-        self.square_type = SquareType::Start;
-    }
-
-    pub fn set_blank_square(&mut self) {
-        self.square_type = SquareType::Blank;
+    pub fn set_square_type(&mut self, square_type: SquareType) {
+        self.square_type = square_type;
     }
 
     pub fn get_square_type(&self) -> &SquareType {
@@ -68,20 +58,12 @@ impl Square {
 }
 
 
-// Needed for making a vector of this things
-impl Clone for Square {
-    fn clone(&self) -> Self {
-        Square::new(self.x_grid, self.y_grid)
-    }
-}
-
-
 pub struct SquareCollection {
     square_width: f32,
     top_offset: f32,
     squares: Vec<Vec<Square>>,
-    objective: (usize, usize),
-    objective_set: bool,
+    objective_square: (usize, usize),
+    objective_square_set: bool,
     start_square: (usize, usize),
     start_square_set: bool
 }
@@ -95,8 +77,8 @@ impl SquareCollection {
             square_width: *square_width,
             top_offset: *top_offset,
             squares: squares,
-            objective: (0, 0),
-            objective_set: false,
+            objective_square: (0, 0),
+            objective_square_set: false,
             start_square: (0, 0),
             start_square_set: false
         }
@@ -126,13 +108,6 @@ impl SquareCollection {
         }
     }
 
-    pub fn create_wall(&mut self, mouse_pos: (f32, f32)) {
-        if mouse_pos.1 > self.top_offset {
-            let (mouse_x, mouse_y): (f32, f32) = self.get_square_from_mouse(mouse_pos);
-            self.squares[mouse_x as usize][mouse_y as usize].got_walled();
-        }
-    }
-
     fn get_square_from_mouse(&self, mouse_pos: (f32, f32)) -> (f32, f32) {
         let mouse_x = mouse_pos.0 / self.square_width;
         let mouse_x = mouse_x.clamp(0f32, (self.squares.len() - 1) as f32);
@@ -141,39 +116,50 @@ impl SquareCollection {
         (mouse_x, mouse_y)
     }
 
-    pub fn set_objective(&mut self, mouse_pos: (f32, f32)) {
+    pub fn change_square_type(&mut self, mouse_pos: (f32, f32), square_type: SquareType) {
         if mouse_pos.1 > self.top_offset {
             let (mouse_x, mouse_y): (f32, f32) = self.get_square_from_mouse(mouse_pos);
             let mouse_x_index = mouse_x as usize;
             let mouse_y_index = mouse_y as usize;
-            //if self.objective != (mouse_x_index, mouse_y_index) {
-            if self.objective_set {
-                if let SquareType::Objective = self.squares[self.objective.0][self.objective.1].get_square_type() {
-                    self.squares[self.objective.0][self.objective.1].set_blank_square();
-                }
+            let previous_type = self.squares[mouse_x_index][mouse_y_index].get_square_type().clone();
+            match square_type {
+                SquareType::Start => {
+                    if self.start_square_set {
+                        self.squares[self.start_square.0][self.start_square.1].set_square_type(SquareType::Blank);
+                    }
+                    self.start_square = (mouse_x_index, mouse_y_index);
+                    self.start_square_set = true;
+                },
+                SquareType::Objective => {
+                    if self.objective_square_set {
+                        self.squares[self.objective_square.0][self.objective_square.1].set_square_type(SquareType::Blank);
+                    }
+                    self.objective_square = (mouse_x_index, mouse_y_index);
+                    self.objective_square_set = true;
+                },
+                _ => {  }
             }
-            self.squares[mouse_x_index][mouse_y_index].set_objective();
-            self.objective = (mouse_x_index, mouse_y_index);
-            self.objective_set = true;
-            //}
+            self.squares[mouse_x_index][mouse_y_index].set_square_type(square_type.clone());
+            match previous_type {
+                SquareType::Start | SquareType::Objective => {
+                    if square_type != previous_type {
+                        match previous_type {
+                            SquareType::Start => { self.start_square_set = false; }
+                            SquareType::Objective => { self.objective_square_set = false; }
+                            _ => {  }
+                        }
+                    }
+                }
+                _ => {  }
+            }
         }
     }
 
-    pub fn set_start_square(&mut self, mouse_pos: (f32, f32)) {
-        if mouse_pos.1 > self.top_offset {
-            let (mouse_x, mouse_y): (f32, f32) = self.get_square_from_mouse(mouse_pos);
-            let mouse_x_index = mouse_x as usize;
-            let mouse_y_index = mouse_y as usize;
-            //if self.start_square != (mouse_x_index, mouse_y_index) {
-            if self.start_square_set {
-                if let SquareType::Start = self.squares[self.start_square.0][self.start_square.1].get_square_type() {
-                    self.squares[self.start_square.0][self.start_square.1].set_blank_square();
-                }
-            }
-            self.squares[mouse_x_index][mouse_y_index].set_start_square();
-            self.start_square = (mouse_x_index, mouse_y_index);
-            self.start_square_set = true;
-            //}
-        }
+    pub fn is_start_square_set(&self) -> bool {
+        self.start_square_set
+    }
+
+    pub fn is_objective_square_set(&self) -> bool {
+        self.objective_square_set
     }
 }
