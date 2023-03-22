@@ -6,7 +6,7 @@ pub fn get_settings() -> HashMap<String, String> {
         ("window_width", "1600"),
         ("window_height", "1000"),
         ("window_title", "Pathfinding"),
-        ("square_width", "50.0"),
-        ("top_offset", "100.0")
+        ("square_width", "50"),
+        ("top_offset", "100")
     ]).into_iter().map(|(k, v)| (k.to_string(), v.to_string())).collect()
 }
