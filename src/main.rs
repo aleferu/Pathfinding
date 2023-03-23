@@ -41,7 +41,6 @@ async fn main() {
 
         // Input
         if input_mq::is_mouse_button_down(mq::MouseButton::Left) {
-            println!("{a:?}", a = input_mq::mouse_position());
             if input_mq::is_key_down(mq::KeyCode::LeftShift) {
                 square_collection.change_square_type(input_mq::mouse_position(), squares::SquareType::Blank);
             } else {
@@ -57,6 +56,12 @@ async fn main() {
             square_collection.search_algorithm(true, false);
         } else if input_mq::is_key_pressed(mq::KeyCode::G) {
             square_collection.search_algorithm(false, true);
+        } else if input_mq::is_key_pressed(mq::KeyCode::C) {
+            square_collection.clear();
+        } else if input_mq::is_key_pressed(mq::KeyCode::M) {
+            println!("a");
+            square_collection.generate_maze();
+            println!("a");
         }
 
         // FPS counter
@@ -113,17 +118,19 @@ fn draw_ui(square_width: usize, top_offset: usize, fps_counter: &str) {
 
     // Controls
     let x_clicks = 125f32;
-    mq::draw_text("LClick to create a wall", x_clicks, min_y + 0.0*font_size, font_size, mq::BLACK);
-    mq::draw_text("RClick to create the goal", x_clicks, min_y + 1.0*font_size, font_size, mq::BLACK);
-    mq::draw_text("MClick to create the start", x_clicks, min_y + 2.0*font_size, font_size, mq::BLACK);
-    let x_algorithms = 500f32;
+    mq::draw_text("LClick to create a wall", x_clicks, min_y + 0.0 * font_size, font_size, mq::BLACK);
+    mq::draw_text("RClick to create the goal", x_clicks, min_y + 1.0 * font_size, font_size, mq::BLACK);
+    mq::draw_text("MClick to create the start", x_clicks, min_y + 2.0 * font_size, font_size, mq::BLACK);
+    let x_algorithms = 480f32;
     mq::draw_text("Press A for A* algorithm", x_algorithms, min_y + 0.0*font_size, font_size, mq::BLACK);
-    mq::draw_text("Press D for Dijkstra's algorithm", x_algorithms, min_y + 1.0*font_size, font_size, mq::BLACK);
-    mq::draw_text("Press G for Greedy Best first algorithm", x_algorithms, min_y + 2.0*font_size, font_size, mq::BLACK);
-    // Commented = not implemented
-    //let x_extra = 1050f32;
-    //mq::draw_text("LShift + LClick for clearing squares", x_extra, min_y + 0.0*font_size, font_size, mq::BLACK);
-    // mq::draw_text("Press C to clear the the board", x_extra, min_y + 1.0*font_size, font_size, mq::BLACK);
-    // mq::draw_text("Press M to generate a maze (or LShift+M)", x_extra, min_y + 2.0*font_size, font_size, mq::BLACK);
+    mq::draw_text("Press D for Dijkstra's algorithm", x_algorithms, min_y + 1.0 * font_size, font_size, mq::BLACK);
+    mq::draw_text("Press G for Greedy Best first algorithm", x_algorithms, min_y + 2.0 * font_size, font_size, mq::BLACK);
+    // Commented == not implemented
+    let x_extra = 1030f32;
+    mq::draw_text("Press C to clear the the board", x_extra, min_y + 0.0 * font_size, font_size, mq::BLACK);
+    mq::draw_text("Press M to generate a maze", x_extra, min_y + 1.0 * font_size, font_size, mq::BLACK);
+    // mq::draw_text("Press arrow keys to go through the solution", x_extra, min_y + 2.0 * font_size, font_size, mq::BLACK);
 
+    // Me
+    mq::draw_text("@aleferu", 4f32, min_y + 1.5 * font_size, font_size, mq::BLACK);
 }

@@ -1,7 +1,6 @@
-#![allow(unused)]
-
 use macroquad::prelude as mq;
 use std::collections::{HashMap, HashSet};
+use rand::Rng;
 
 #[derive(Clone)]
 #[derive(PartialEq)]
@@ -39,18 +38,6 @@ impl Square {
 
     pub fn get_square_type(&self) -> &SquareType {
         &self.square_type
-    }
-
-    pub fn get_x(&self) -> usize {
-        self.x_grid as usize
-    }
-
-    pub fn get_y(&self) -> usize {
-        self.y_grid as usize
-    }
-
-    pub fn equals(&self, other: &Square) -> bool{
-        self.x_grid == other.x_grid && self.y_grid == other.y_grid
     }
 
     fn draw(&self, square_width: usize, top_offset: usize) {
@@ -168,14 +155,6 @@ impl SquareCollection {
         }
     }
 
-    pub fn is_start_square_set(&self) -> bool {
-        self.start_square_set
-    }
-
-    pub fn is_objective_square_set(&self) -> bool {
-        self.objective_square_set
-    }
-
     fn manhattan_distance(&self, sq: &(usize, usize)) -> usize {
         let x_dist: isize = sq.0 as isize - self.objective_square.0 as isize;
         let y_dist: isize = sq.1 as isize - self.objective_square.1 as isize;
@@ -189,7 +168,7 @@ impl SquareCollection {
     // false true -> Greedy Best first
     pub fn search_algorithm(&mut self, weights: bool, heuristics: bool) {
         self.clear_results();
-        if (!self.objective_square_set || !self.start_square_set) { return }
+        if !self.objective_square_set || !self.start_square_set { return }
         let x_dim = self.squares.len() - 1;
         let y_dim = self.squares[0].len() - 1;
         let mut open_set: HashSet<(usize, usize)> = HashSet::new();
@@ -203,9 +182,9 @@ impl SquareCollection {
         scores.insert(self.start_square, self.manhattan_distance(&self.start_square));
 
         'main_loop: while !open_set.is_empty() {
-            let mut current = self.get_lowest_score(&scores, &open_set);
+            let mut current = self.get_lowest_score(&scores, &open_set, heuristics);
             if current.0 == self.objective_square.0 && current.1 == self.objective_square.1 {
-                'reconstruct_path: loop {
+                loop {
                     current = came_from[&current];
                     if current.0 == self.start_square.0 && current.1 == self.start_square.1 {
                         open_set.clear();
@@ -285,9 +264,9 @@ impl SquareCollection {
         }
     }
 
-    fn get_lowest_score(&self, scores: &HashMap<(usize, usize), usize>, open_set:&HashSet<(usize, usize)>) -> (usize, usize) {
+    fn get_lowest_score(&self, scores: &HashMap<(usize, usize), usize>, open_set:&HashSet<(usize, usize)>, dist: bool) -> (usize, usize) {
         let mut result = Vec::from([(0, 0)]);
-        let mut minimum = usize::MAX; // scores are >= 1
+        let mut minimum = usize::MAX;
         for tuple in open_set {
             if *tuple == self.objective_square {
                 return *tuple;
@@ -300,15 +279,42 @@ impl SquareCollection {
             }
         }
         let mut closest = result.get(0).unwrap();
-        minimum = self.manhattan_distance(closest);
-        for tuple in &result[1..] {
-            let new_dist = self.manhattan_distance(&tuple);
-            if new_dist < minimum {
-                minimum = new_dist;
-                closest = &tuple;
+        if dist {
+            minimum = self.manhattan_distance(closest);
+            for tuple in &result[1..] {
+                let new_dist = self.manhattan_distance(&tuple);
+                if new_dist < minimum {
+                    minimum = new_dist;
+                    closest = &tuple;
+                }
             }
         }
         *closest
     }
 
+    pub fn clear(&mut self) {
+        for x in 0..self.squares.len() {
+            for y in 0..self.squares[0].len() {
+                self.squares[x][y].set_square_type(SquareType::Blank);
+            }
+        }
+        self.start_square_set = false;
+        self.objective_square_set = false;
+    }
+
+    pub fn generate_maze(&mut self) {
+        let mut rng = rand::thread_rng();
+        for x in 0..self.squares.len() {
+            for y in 0..self.squares[0].len() {
+                let test = (rng.gen::<f32>() * 5f32) as usize;
+                if test % 5 > 1 {
+                    self.squares[x][y].set_square_type(SquareType::Blank);
+                } else {
+                    self.squares[x][y].set_square_type(SquareType::Wall);
+                }
+            }
+        }
+        self.start_square_set = false;
+        self.objective_square_set = false;
+    }
 }
