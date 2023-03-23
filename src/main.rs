@@ -51,7 +51,11 @@ async fn main() {
         } else if input_mq::is_mouse_button_down(mq::MouseButton::Middle) {
             square_collection.change_square_type(input_mq::mouse_position(), squares::SquareType::Start);
         } else if input_mq::is_key_pressed(mq::KeyCode::A) {
-            square_collection.a_star();
+            square_collection.search_algorithm(true, true);
+        } else if input_mq::is_key_pressed(mq::KeyCode::D) {
+            square_collection.search_algorithm(true, false);
+        } else if input_mq::is_key_pressed(mq::KeyCode::G) {
+            square_collection.search_algorithm(false, true);
         }
 
         // Draw
@@ -78,8 +82,6 @@ async fn main() {
         if time_difference > 0 {
             std::thread::sleep(time::Duration::from_micros(time_difference as u64));
         }
-
-        println!("{:?}\t{:?}", square_collection.is_start_square_set(), square_collection.is_objective_square_set());
 
         // Next frame
         mq::next_frame().await;
