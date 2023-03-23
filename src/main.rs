@@ -59,9 +59,7 @@ async fn main() {
         } else if input_mq::is_key_pressed(mq::KeyCode::C) {
             square_collection.clear();
         } else if input_mq::is_key_pressed(mq::KeyCode::M) {
-            println!("a");
             square_collection.generate_maze();
-            println!("a");
         }
 
         // FPS counter
