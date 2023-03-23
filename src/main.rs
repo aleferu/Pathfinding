@@ -60,6 +60,10 @@ async fn main() {
             square_collection.clear();
         } else if input_mq::is_key_pressed(mq::KeyCode::M) {
             square_collection.generate_maze();
+        } else if input_mq::is_key_pressed(mq::KeyCode::Right) {
+            square_collection.load_next_state();
+        } else if input_mq::is_key_pressed(mq::KeyCode::Left) {
+            square_collection.load_previous_state();
         }
 
         // FPS counter
@@ -127,7 +131,7 @@ fn draw_ui(square_width: usize, top_offset: usize, fps_counter: &str) {
     let x_extra = 1030f32;
     mq::draw_text("Press C to clear the the board", x_extra, min_y + 0.0 * font_size, font_size, mq::BLACK);
     mq::draw_text("Press M to generate a maze", x_extra, min_y + 1.0 * font_size, font_size, mq::BLACK);
-    // mq::draw_text("Press arrow keys to go through the solution", x_extra, min_y + 2.0 * font_size, font_size, mq::BLACK);
+    mq::draw_text("Press arrow keys to go through the solution", x_extra, min_y + 2.0 * font_size, font_size, mq::BLACK);
 
     // Me
     mq::draw_text("@aleferu", 4f32, min_y + 1.5 * font_size, font_size, mq::BLACK);

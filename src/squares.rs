@@ -63,7 +63,9 @@ pub struct SquareCollection {
     objective_square: (usize, usize),
     objective_square_set: bool,
     start_square: (usize, usize),
-    start_square_set: bool
+    start_square_set: bool,
+    states: Vec<Vec<Vec<SquareType>>>,
+    current_state: usize,
 }
 
 
@@ -78,7 +80,9 @@ impl SquareCollection {
             objective_square: (0, 0),
             objective_square_set: false,
             start_square: (0, 0),
-            start_square_set: false
+            start_square_set: false,
+            states: Vec::new(),
+            current_state: 0,
         }
     }
 
@@ -187,7 +191,7 @@ impl SquareCollection {
                 loop {
                     current = came_from[&current];
                     if current.0 == self.start_square.0 && current.1 == self.start_square.1 {
-                        open_set.clear();
+                        self.states.push(self.get_current_state());
                         break 'main_loop;
                     }
                     self.squares[current.0][current.1].set_square_type(SquareType::Solution);
@@ -220,7 +224,9 @@ impl SquareCollection {
                     scores.insert(neighbor, tentative_path_cost);
                 }
             }
+            self.states.push(self.get_current_state());
         }
+        self.current_state = self.states.len() - 1;
     }
 
     fn neighbors(&self, current: &(usize, usize), x_max: &usize, y_max: &usize, closed_set: &HashSet<(usize, usize)>) -> Vec<(usize, usize)> {
@@ -253,6 +259,7 @@ impl SquareCollection {
     }
 
     fn clear_results(&mut self) {
+        self.states = Vec::new();
         for x in 0..self.squares.len() {
             for y in 0..self.squares[0].len() {
                 let sq = &mut self.squares[x][y];
@@ -316,5 +323,46 @@ impl SquareCollection {
         }
         self.start_square_set = false;
         self.objective_square_set = false;
+    }
+
+    fn get_current_state(&self) -> Vec<Vec<SquareType>> {
+        let mut result: Vec<Vec<SquareType>> = Vec::new();
+        for x in 0..self.squares.len() {
+            let mut col: Vec<SquareType> = Vec::new();
+            for y in 0..self.squares[0].len() {
+                col.push(self.squares[x][y].square_type.to_owned())
+            }
+            result.push(col);
+        }
+        result
+    }
+
+    pub fn load_next_state(&mut self) {
+        if self.states.len() > 0 {
+            self.current_state += 1;
+            if self.current_state == self.states.len() {
+                self.current_state = 0;
+            }
+            self.load_state();
+        }
+    }
+
+    pub fn load_previous_state(&mut self) {
+        if self.states.len() > 0 {
+            if self.current_state == 0 {
+                self.current_state = self.states.len() - 1;
+            } else {
+                self.current_state -= 1;
+            }
+            self.load_state();
+        }
+    }
+
+    fn load_state(&mut self) {
+        for x in 0..self.squares.len() {
+            for y in 0..self.squares[0].len() {
+                self.squares[x][y].set_square_type(self.states[self.current_state][x][y].to_owned());
+            }
+        }
     }
 }
