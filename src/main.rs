@@ -41,6 +41,7 @@ async fn main() {
 
         // Input
         if input_mq::is_mouse_button_down(mq::MouseButton::Left) {
+            println!("{a:?}", a = input_mq::mouse_position());
             if input_mq::is_key_down(mq::KeyCode::LeftShift) {
                 square_collection.change_square_type(input_mq::mouse_position(), squares::SquareType::Blank);
             } else {
@@ -58,10 +59,6 @@ async fn main() {
             square_collection.search_algorithm(false, true);
         }
 
-        // Draw
-        square_collection.draw_squares();
-        draw_grid(square_width, top_offset);
-
         // FPS counter
         let time_elapsed_since_start = loop_start_time.elapsed().as_micros();
         if time_elapsed_since_start >= 1_000_000 {
@@ -72,11 +69,14 @@ async fn main() {
         fps_counter += 1;
 
         let text_to_draw = format!("FPS: {frames_drawed}");
-        mq::draw_text(&text_to_draw, 5f32, 25f32, 30f32, mq::BLACK);
+        
+        // Draw
+        square_collection.draw_squares();
+        draw_ui(square_width, top_offset, &text_to_draw);
 
 
         // FPS limit so it doesn't stress your CPU out
-        let fps: f32 = 30.0; // change this
+        let fps: f32 = 60.0; // change this
         let ideal_time: f32 = 1.0 / fps * 1_000_000.0 * (fps_counter as f32);
         let time_difference: i128 = ideal_time as i128 - time_elapsed_since_start as i128;
         if time_difference > 0 {
@@ -89,7 +89,8 @@ async fn main() {
 }
 
 // Draw grid
-fn draw_grid(square_width: usize, top_offset: usize) {
+fn draw_ui(square_width: usize, top_offset: usize, fps_counter: &str) {
+    // Grid
     let mut x = 0usize;
     let mut y = top_offset;
     let thickness = 2f32;
@@ -104,4 +105,24 @@ fn draw_grid(square_width: usize, top_offset: usize) {
         mq::draw_line(0f32, y as f32, mq::screen_width(), y as f32, thickness, line_color);
         y += square_width;
     }
+
+    let min_y = 25f32;
+    let font_size = 30f32;
+    // FPS
+    mq::draw_text(fps_counter, 5f32, min_y, font_size, mq::BLACK);
+
+    // Controls
+    let x_clicks = 125f32;
+    mq::draw_text("LClick to create a wall", x_clicks, min_y + 0.0*font_size, font_size, mq::BLACK);
+    mq::draw_text("RClick to create the goal", x_clicks, min_y + 1.0*font_size, font_size, mq::BLACK);
+    mq::draw_text("MClick to create the start", x_clicks, min_y + 2.0*font_size, font_size, mq::BLACK);
+    let x_algorithms = 500f32;
+    mq::draw_text("Press A for A* algorithm", x_algorithms, min_y + 0.0*font_size, font_size, mq::BLACK);
+    mq::draw_text("Press D for Dijkstra's algorithm", x_algorithms, min_y + 1.0*font_size, font_size, mq::BLACK);
+    mq::draw_text("Press G for Greedy Best first algorithm", x_algorithms, min_y + 2.0*font_size, font_size, mq::BLACK);
+    let x_extra = 1050f32;
+    mq::draw_text("LShift + LClick for clearing squares", x_extra, min_y + 0.0*font_size, font_size, mq::BLACK);
+    // mq::draw_text("Press C to clear the the board", x_extra, min_y + 1.0*font_size, font_size, mq::BLACK);
+    // mq::draw_text("Press M to generate a maze (or LShift+M)", x_extra, min_y + 2.0*font_size, font_size, mq::BLACK);
+
 }
