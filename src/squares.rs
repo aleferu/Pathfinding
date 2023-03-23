@@ -176,7 +176,7 @@ impl SquareCollection {
         self.objective_square_set
     }
 
-    fn manhattan_distance(&self, sq: (usize, usize)) -> usize {
+    fn manhattan_distance(&self, sq: &(usize, usize)) -> usize {
         let x_dist: isize = sq.0 as isize - self.objective_square.0 as isize;
         let y_dist: isize = sq.1 as isize - self.objective_square.1 as isize;
         let result = (x_dist.abs() + y_dist.abs()) as usize;
@@ -199,11 +199,10 @@ impl SquareCollection {
 
         open_set.insert(self.start_square);
         path_costs.insert(self.start_square, 0);
-        scores.insert(self.start_square, self.manhattan_distance(self.start_square));
+        scores.insert(self.start_square, self.manhattan_distance(&self.start_square));
 
         'main_loop: while !open_set.is_empty() {
-            let mut current = get_lowest_score(&scores, &open_set);
-
+            let mut current = self.get_lowest_score(&scores, &open_set);
             if current.0 == self.objective_square.0 && current.1 == self.objective_square.1 {
                 'reconstruct_path: loop {
                     current = came_from[&current];
@@ -227,16 +226,16 @@ impl SquareCollection {
                     came_from.insert(neighbor, current);
                     path_costs.insert(neighbor, tentative_path_cost);
                     if heuristics {
-                        tentative_path_cost += self.manhattan_distance(neighbor);
+                        tentative_path_cost += self.manhattan_distance(&neighbor);
                     }
                     scores.insert(neighbor, tentative_path_cost);
                 }
-                if !open_set.contains(&neighbor) {
+                if !open_set.contains(&neighbor){
                     open_set.insert(neighbor);
                     came_from.insert(neighbor, current);
                     path_costs.insert(neighbor, tentative_path_cost);
                     if heuristics {
-                        tentative_path_cost += self.manhattan_distance(neighbor);
+                        tentative_path_cost += self.manhattan_distance(&neighbor);
                     }
                     scores.insert(neighbor, tentative_path_cost);
                 }
@@ -284,16 +283,31 @@ impl SquareCollection {
             }
         }
     }
-}
 
-fn get_lowest_score(scores: &HashMap<(usize, usize), usize>, open_set:&HashSet<(usize, usize)>) -> (usize, usize) {
-    let mut result = (0, 0);
-    let mut minimum = usize::MAX; // scores are >= 1
-    for tuple in open_set {
-        if scores[tuple] < minimum {
-            result = *tuple;
-            minimum = scores[tuple];
+    fn get_lowest_score(&self, scores: &HashMap<(usize, usize), usize>, open_set:&HashSet<(usize, usize)>) -> (usize, usize) {
+        let mut result = Vec::from([(0, 0)]);
+        let mut minimum = usize::MAX; // scores are >= 1
+        for tuple in open_set {
+            if *tuple == self.objective_square {
+                return *tuple;
+            }
+            if scores[tuple] < minimum {
+                result = Vec::from([*tuple]);
+                minimum = scores[tuple];
+            } else if scores[tuple] == minimum {
+                result.push(*tuple);
+            }
         }
+        let mut closest = result.get(0).unwrap();
+        minimum = self.manhattan_distance(closest);
+        for tuple in &result[1..] {
+            let new_dist = self.manhattan_distance(&tuple);
+            if new_dist < minimum {
+                minimum = new_dist;
+                closest = &tuple;
+            }
+        }
+        *closest
     }
-    result
+
 }
