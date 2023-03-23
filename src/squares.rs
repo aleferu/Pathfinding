@@ -189,6 +189,7 @@ impl SquareCollection {
     // false true -> Greedy Best first
     pub fn search_algorithm(&mut self, weights: bool, heuristics: bool) {
         self.clear_results();
+        if (!self.objective_square_set || !self.start_square_set) { return }
         let x_dim = self.squares.len() - 1;
         let y_dim = self.squares[0].len() - 1;
         let mut open_set: HashSet<(usize, usize)> = HashSet::new();

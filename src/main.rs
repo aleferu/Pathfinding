@@ -120,8 +120,9 @@ fn draw_ui(square_width: usize, top_offset: usize, fps_counter: &str) {
     mq::draw_text("Press A for A* algorithm", x_algorithms, min_y + 0.0*font_size, font_size, mq::BLACK);
     mq::draw_text("Press D for Dijkstra's algorithm", x_algorithms, min_y + 1.0*font_size, font_size, mq::BLACK);
     mq::draw_text("Press G for Greedy Best first algorithm", x_algorithms, min_y + 2.0*font_size, font_size, mq::BLACK);
-    let x_extra = 1050f32;
-    mq::draw_text("LShift + LClick for clearing squares", x_extra, min_y + 0.0*font_size, font_size, mq::BLACK);
+    // Commented = not implemented
+    //let x_extra = 1050f32;
+    //mq::draw_text("LShift + LClick for clearing squares", x_extra, min_y + 0.0*font_size, font_size, mq::BLACK);
     // mq::draw_text("Press C to clear the the board", x_extra, min_y + 1.0*font_size, font_size, mq::BLACK);
     // mq::draw_text("Press M to generate a maze (or LShift+M)", x_extra, min_y + 2.0*font_size, font_size, mq::BLACK);
 
