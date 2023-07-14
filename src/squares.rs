@@ -2,6 +2,7 @@ use macroquad::prelude as mq;
 use std::collections::{HashMap, HashSet};
 use rand::Rng;
 
+
 #[derive(Clone)]
 #[derive(PartialEq)]
 pub enum SquareType {
@@ -13,6 +14,7 @@ pub enum SquareType {
      Solution
  }
 
+
 // Each grid cell
 #[derive(Clone)]
 pub struct Square {
@@ -20,6 +22,7 @@ pub struct Square {
     y_grid: usize,
     square_type: SquareType,
 }
+
 
 impl Square {
     pub fn new(x: usize, y: usize) -> Square {
@@ -30,15 +33,18 @@ impl Square {
         }
     }
 
+
     pub fn set_square_type(&mut self, square_type: SquareType) {
         if !(self.square_type == SquareType::Start && square_type == SquareType::Visited) {
             self.square_type = square_type;
         }
     }
 
+
     pub fn get_square_type(&self) -> &SquareType {
         &self.square_type
     }
+
 
     fn draw(&self, square_width: usize, top_offset: usize) {
         let x_coord = self.x_grid * square_width;
@@ -70,7 +76,6 @@ pub struct SquareCollection {
 
 
 impl SquareCollection {
-
     pub fn new(square_width: usize, top_offset: usize, screen_width: f32, screen_height: f32) -> SquareCollection {
         let squares: Vec<Vec<Square>> = SquareCollection::build_squares(square_width, top_offset, screen_width, screen_height);
         SquareCollection {
@@ -85,6 +90,7 @@ impl SquareCollection {
             current_state: 0,
         }
     }
+
 
     fn build_squares(square_width: usize, top_offset: usize, screen_width: f32, screen_height: f32) -> Vec<Vec<Square>> {
         let mut result: Vec<Vec<Square>> = Vec::new();
@@ -104,6 +110,7 @@ impl SquareCollection {
         result
     }
 
+
     pub fn draw_squares(&self) {
         for column in &self.squares {
             for square in column {
@@ -112,6 +119,7 @@ impl SquareCollection {
         }
     }
 
+
     fn get_square_from_mouse(&self, mouse_pos: (f32, f32)) -> (f32, f32) {
         let mouse_x = mouse_pos.0 / (self.square_width as f32);
         let mouse_x = mouse_x.clamp(0f32, (self.squares.len() - 1) as f32);
@@ -119,6 +127,7 @@ impl SquareCollection {
         let mouse_y = mouse_y.clamp(0f32, (self.squares[0].len() - 1) as f32);
         (mouse_x, mouse_y)
     }
+
 
     pub fn change_square_type(&mut self, mouse_pos: (f32, f32), square_type: SquareType) {
         if mouse_pos.1 > self.top_offset as f32 {
@@ -159,6 +168,7 @@ impl SquareCollection {
         }
     }
 
+
     fn manhattan_distance(&self, sq: &(usize, usize)) -> usize {
         let x_dist: isize = sq.0 as isize - self.objective_square.0 as isize;
         let y_dist: isize = sq.1 as isize - self.objective_square.1 as isize;
@@ -166,7 +176,8 @@ impl SquareCollection {
         result
     }
 
-// https://en.wikipedia.org/wiki/A*_search_algorithm
+
+    // https://en.wikipedia.org/wiki/A*_search_algorithm
     // true true  -> A*
     // true false -> Dijkstra
     // false true -> Greedy Best first
@@ -229,6 +240,7 @@ impl SquareCollection {
         self.current_state = self.states.len() - 1;
     }
 
+
     fn neighbors(&self, current: &(usize, usize), x_max: &usize, y_max: &usize, closed_set: &HashSet<(usize, usize)>) -> Vec<(usize, usize)> {
         let mut result: Vec<(usize, usize)> = Vec::new();
         if current.1 != 0 {
@@ -258,6 +270,7 @@ impl SquareCollection {
         result
     }
 
+
     fn clear_results(&mut self) {
         self.states = Vec::new();
         for x in 0..self.squares.len() {
@@ -270,6 +283,7 @@ impl SquareCollection {
             }
         }
     }
+
 
     fn get_lowest_score(&self, scores: &HashMap<(usize, usize), usize>, open_set:&HashSet<(usize, usize)>, dist: bool) -> (usize, usize) {
         let mut result = Vec::from([(0, 0)]);
@@ -299,6 +313,7 @@ impl SquareCollection {
         *closest
     }
 
+
     pub fn clear(&mut self) {
         for x in 0..self.squares.len() {
             for y in 0..self.squares[0].len() {
@@ -308,6 +323,7 @@ impl SquareCollection {
         self.start_square_set = false;
         self.objective_square_set = false;
     }
+
 
     pub fn generate_maze(&mut self) {
         let mut rng = rand::thread_rng();
@@ -325,6 +341,7 @@ impl SquareCollection {
         self.objective_square_set = false;
     }
 
+
     fn get_current_state(&self) -> Vec<Vec<SquareType>> {
         let mut result: Vec<Vec<SquareType>> = Vec::new();
         for x in 0..self.squares.len() {
@@ -337,6 +354,7 @@ impl SquareCollection {
         result
     }
 
+
     pub fn load_next_state(&mut self) {
         if self.states.len() > 0 {
             self.current_state += 1;
@@ -346,6 +364,7 @@ impl SquareCollection {
             self.load_state();
         }
     }
+
 
     pub fn load_previous_state(&mut self) {
         if self.states.len() > 0 {
@@ -357,6 +376,7 @@ impl SquareCollection {
             self.load_state();
         }
     }
+
 
     fn load_state(&mut self) {
         for x in 0..self.squares.len() {

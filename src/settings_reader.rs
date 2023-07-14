@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+
 // Modify the settings in the extra_folder folder, nothing to see here.
 pub fn get_settings() -> HashMap<String, String> {
     HashMap::<&str, &str>::from([
